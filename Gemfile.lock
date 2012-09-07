@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    adck (0.0.0)
+    adck (0.1.0)
       multi_json
 
 GEM

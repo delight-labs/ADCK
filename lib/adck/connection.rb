@@ -19,7 +19,10 @@ module ADCK
     end
 
     def ssl
-      @ssl ||= OpenSSL::SSL::SSLSocket.new(sock,@context)
+      @ssl ||= begin
+        ssl = OpenSSL::SSL::SSLSocket.new(sock,@context)
+        ssl.connect
+      end
     end
 
     def close
