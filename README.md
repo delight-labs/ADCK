@@ -31,7 +31,7 @@ You can set the defaults for all connections created by setting them on the `ADC
 ### Quick send one notification
 
 	device_token = '123abc456def'
-	
+
 	ADCK(device_token, 'POPUP!')
 
 is equivalent to
@@ -41,7 +41,7 @@ is equivalent to
 also the same
 
 	ADCK.send_notification(device_token, body: 'POPUP!')
-	
+
 All of these quick sendings use the default server values and open and close the connection for each notification.
 
 ### Multiple notifications
@@ -57,7 +57,7 @@ The `Message` creates the payload which is sent to the iPhone.
 To send many messages quickly
 
 	n2 = ADCK::Notification.new(device_token, 'POPUP2!)
-	
+
 	ADCK.send_notifications([n1,n2])
 
 or you can
@@ -89,11 +89,11 @@ Messages are passed all the way though so in the previous example where we ran `
 Here are some examples of messages:
 
 	ADCK::Message.new(body: 'This is what the user sees')
-	
+
 Now lets add a sound and a badge count:
-	
+
 	ADCK::Message.new(body: 'This is what the user sees', sound: 'default', badge: 5)
-	
+
 What if we don't want to show an action button, just want to pop up a notification with an "OK" button.
 
 	ADCK::Message.new(body: 'Something you cant do anything about', action_loc_key: nil)
@@ -109,7 +109,7 @@ This will open and close a new connection to the server. If you want to use an e
 
 	conn = ADCK::Connection.new
 	m.connection = conn
-	
+
 	conn.open
 	m.send_to([token1,token2,…,tokenN])
 	m.send_to([token1,token2,…,tokenN])
@@ -123,11 +123,11 @@ There's one caviat, the message is compiled and frozen upon sending to improve p
 	m.body = 'Cute Kitty2' #=> RuntimeError: can't modify frozen ADCK::Message
 
 You can however dupe
-	
+
 	m = m.dup
 	m.body = 'Cute Kitty2'
 	m.send_to([token1,token2,…,tokenN])
-	
+
 or you can tell the message to not freeze it
 
 	m = ADCK::Message.new(body: 'Cute Kitty!', action_loc_key: "PET_IT", freeze: false)
@@ -135,15 +135,22 @@ or you can tell the message to not freeze it
 	m.body = 'Cute Kitty2'
 	m.send_to([token1,token2,…,tokenN])
 
+#### Extra parameters
+
+* freeze: if set to false the message wont be frozen when packaged up
+* validate: disable valdation of size and other values
+* truncate: Truncate the value of `body` if it would cause the message to be too
+large
+
 ### Connection
 
 A good example of when you'd want to use multiple connections is if you have different `.pem` files (for different apps maybe) that you want to use.
 
 	conn_iphone = ADCK::Connection.new(pem: Rails.root+'config/pem/iphone.pem')
 	conn_ipad = ADCK::Connection.new(pem: Rails.root+'config/pem/ipad.pem')
-	
+
 	n = ADCK::Notification.new(token, "Sent to both iPhone and iPad apps")
 	n2 = ADCK::Notification.new(token2, "Sent to iPad app")
-	
+
 	conn_iphone.send_notification(n)
 	conn_ipad.send_notifications([n,n2])

@@ -7,23 +7,37 @@ module ADCK
       :alert, :badge, :sound, :other
     ]
     attr_accessor *FIELDS
-    attr_accessor :connection
+    attr_accessor :connection, :truncate
 
     def initialize(message)
       if message.is_a? Hash
         @validate = message[:validate]
         @freeze = message[:freeze]
+        @truncate = message.delete(:truncate)
       end
 
-      set_values_from_arg(message)
-
       self.other ||= {}
+
+      set_values_from_arg(message)
     end
 
-    def alert
+    def alert test=false
       a = {}
 
-      a[:body] = body if body
+      if test
+        a[:body] = ''
+      elsif body
+        if truncate && body.bytesize > @max_body_length
+          truncate_with = truncate.is_a?(String) ? truncate : '...'
+
+          set_body = body[0...(@max_body_length-truncate_with.length)]
+          set_body << truncate_with
+        else
+          set_body = body
+        end
+
+        a[:body] = set_body
+      end
 
       if action_loc_key # is not false or nil
         a[:'action-loc-key'] = action_loc_key
@@ -48,13 +62,18 @@ module ADCK
       @action_loc_key = val.nil? ? false : val
     end
 
-    def aps
+    def aps test=false
       a = {}
-      _alert = alert
+      _alert = alert(test)
       a[:alert] = _alert unless _alert.empty?
       a[:badge] = badge if badge
       a[:sound] = sound if sound
       a
+    end
+
+    def test_payload
+      allowed = MultiJson.dump(other.merge(aps: aps(true))).bytesize
+      @max_body_length = 255-allowed
     end
 
     def payload(options={})
@@ -144,6 +163,8 @@ module ADCK
       else
         raise "Message needs to have either a hash or string"
       end
+
+      test_payload
     end
 
     class PayloadTooLarge < RuntimeError; end
