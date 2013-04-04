@@ -140,7 +140,7 @@ or you can tell the message to not freeze it
 * freeze: if set to false the message wont be frozen when packaged up
 * validate: disable valdation of size and other values
 * truncate: Truncate the value of `body` if it would cause the message to be too
-large
+large (no way to truncate loc args as of yet)
 
 ### Connection
 
